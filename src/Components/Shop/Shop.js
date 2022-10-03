@@ -7,8 +7,10 @@ import Product from '../Product/Product';
 import './Shop.css';
 
 const Shop = () => {
+
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
+
   useEffect(() => {
     fetch('products.json')
       .then(res => res.json())
@@ -17,15 +19,36 @@ const Shop = () => {
 
   useEffect(() => {
     const storedCart = getStoredCart();
-    console.log(storedCart);
-  }, [])
+    const savedCart = [];
+    for(const id in storedCart){
+      const addedProduct = products.find(product => product.id === id)
+      if(addedProduct){
+        const quantity = storedCart[id];
+        addedProduct.quantity = quantity;
+        savedCart.push(addedProduct);
+      }
+    }
+    setCart(savedCart);
+  }, [products]);
 
-  const handleAddToCart = (product) =>{
-    // console.log(product);
+  const handleAddToCart = (selectedProduct) =>{
+    console.log(selectedProduct);
     // cart.push(product); // do not use this method.
-    const newCart = [...cart, product];
+    let newCart = [];
+    const exitst = cart.find(product => product.id === selectedProduct);
+
+    if(!exitst){
+      selectedProduct.quantity = 1;
+      newCart = [...cart, selectedProduct];
+    }
+    else{
+      const rest = cart.filter(product => product.id !== selectedProduct);
+      exitst.quantity = exitst.quantity + 1;
+      newCart = [...rest, exitst];
+    }
+
     setCart(newCart);
-    addToDb(product.id);
+    addToDb(selectedProduct.id);
   }
   return (
     <div className='shop-container'>
